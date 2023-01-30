@@ -27,7 +27,8 @@ type Config struct {
 	ClientBind   string `yaml:"clientBind"    json:"clientBind"`
 	APIBind      string `yaml:"apiBind"       json:"apiBind"`
 	Redirect     string `yaml:"redirect"      json:"redirect"`
-	Login        string `yaml:"login"         json:"login"`
+	APIBaseURL   string `yaml:"apiBaseUrl"    json:"apiBaseUrl"`
+	Debug        bool   `yaml:"debug"    json:"debug"`
 }
 
 // LoadConfig loads a configuration from file.

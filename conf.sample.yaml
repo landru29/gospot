@@ -6,4 +6,6 @@ clientBind: 0.0.0.0:8000
 
 redirect: http://localhost:8000
 
-login: http://localhost:3000/login
+apiBaseUrl: http://localhost:3000
+
+debug: true

@@ -8,18 +8,28 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func providePublicAPI(log logrus.FieldLogger, conf *app.Config, toLaunch apiList) []server.Router {
+func providePublicAPI(log logrus.FieldLogger, conf *app.Config, toLaunch apiList) ([]server.Router, error) {
 	out := []server.Router{}
 
 	if toLaunch.Has("api") {
-		out = append(out, api.New(log, conf))
+		srv, err := api.New(log, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, srv)
 	}
 
 	if toLaunch.Has("client") {
-		out = append(out, client.New(log, conf))
+		srv, err := client.New(log, conf)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, srv)
 	}
 
-	return out
+	return out, nil
 }
 
 func provideLogger() logrus.FieldLogger {

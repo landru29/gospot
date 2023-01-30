@@ -5,7 +5,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"net/http"
+	"net/url"
+	"path"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -21,6 +24,7 @@ const (
 type injection struct {
 	Hash  string
 	Login string
+	Debug string
 }
 
 // Server is the Client server.
@@ -31,7 +35,7 @@ type Server struct {
 }
 
 // New creates a new Client.
-func New(log logrus.FieldLogger, conf *app.Config) *Server {
+func New(log logrus.FieldLogger, conf *app.Config) (*Server, error) {
 	router := mux.NewRouter()
 
 	srv := &http.Server{
@@ -40,16 +44,24 @@ func New(log logrus.FieldLogger, conf *app.Config) *Server {
 		ReadHeaderTimeout: time.Second * server.ReadHeaderTimeoutSeconds,
 	}
 
+	loginURL, err := url.Parse(conf.APIBaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse apiBaseUrl in configuration file: %w", err)
+	}
+
+	loginURL.Path = path.Join(loginURL.Path, "login")
+
 	router.HandleFunc(`/{file:.*}`, templateFile("./public/", injection{
 		Hash:  randomHash(),
-		Login: conf.Login,
+		Login: loginURL.String(),
+		Debug: map[bool]string{true: "true", false: "false"}[conf.Debug],
 	})).Methods(http.MethodGet)
 
 	return &Server{
 		log:    log,
 		conf:   conf,
 		server: srv,
-	}
+	}, nil
 }
 
 func randomHash() string {
@@ -61,7 +73,7 @@ func randomHash() string {
 
 // Start implements the Router interface.
 func (s *Server) Start(ctx context.Context) {
-	s.log.WithField("addr", s.conf.ClientBind).Info("launching client")
+	s.log.WithField("addr", s.server.Addr).Info("launching client")
 
 	go func() {
 		_ = s.server.ListenAndServe()

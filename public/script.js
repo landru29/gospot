@@ -6,6 +6,10 @@ $(()=> {
 
 
 function ensureToken() {
+    if (window.debug) {
+        localStorage.removeItem('token');
+    }
+
     window.query = {};
     document.location.search.replace('?', '').split('&').forEach((elt => {
         const splitted = elt.split('=');

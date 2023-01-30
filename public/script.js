@@ -1,7 +1,9 @@
 $(()=> {
-    ensureToken();
+    if (!ensureToken()) {
+        return;
+    }
 
-
+    listAlbums(localStorage.getItem('token'));
 });
 
 
@@ -23,6 +25,28 @@ function ensureToken() {
     }
 
     if (!localStorage.getItem('token')) {
-        location.href = window.loginURL;
+        location.href = `${window.apiURL}/login`;
+
+        return false;
     }
+
+    return true;
+}
+
+function listAlbums(token) {
+    $.ajax({
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+        },
+        method: 'GET',
+        url: `${window.apiURL}/albums`,
+        dataType: 'json',
+    }).done((data) => {
+        data.forEach((elt) => {
+            image = elt.images && elt.images.length ? elt.images[0] : {};
+            $('#albums').append($(`<div class="album"><img src="${image.url}"><span>${elt.name}</span></div>`))
+
+        });
+    });
 }

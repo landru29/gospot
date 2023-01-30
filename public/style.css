@@ -6,3 +6,16 @@ h1 {
     text-align: center;
 }
 
+
+div.album {
+    display: inline-block;
+    Width: 200px;
+
+    border: solid 1px #888;
+    margin: 10px;
+    padding: 10px;
+}
+
+div.album img {
+    width: 200px;
+}

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -23,7 +22,7 @@ const (
 
 type injection struct {
 	Hash  string
-	Login string
+	Url   string
 	Debug string
 }
 
@@ -44,16 +43,14 @@ func New(log logrus.FieldLogger, conf *app.Config) (*Server, error) {
 		ReadHeaderTimeout: time.Second * server.ReadHeaderTimeoutSeconds,
 	}
 
-	loginURL, err := url.Parse(conf.APIBaseURL)
+	apiURL, err := url.Parse(conf.APIBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse apiBaseUrl in configuration file: %w", err)
 	}
 
-	loginURL.Path = path.Join(loginURL.Path, "login")
-
 	router.HandleFunc(`/{file:.*}`, templateFile("./public/", injection{
 		Hash:  randomHash(),
-		Login: loginURL.String(),
+		Url:   apiURL.String(),
 		Debug: map[bool]string{true: "true", false: "false"}[conf.Debug],
 	})).Methods(http.MethodGet)
 

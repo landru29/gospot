@@ -3,12 +3,16 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strings"
 	"text/template"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/landru29/gospot/internal/app"
+	"github.com/landru29/gospot/internal/music"
 	"github.com/landru29/gospot/internal/oauth"
 	"github.com/landru29/gospot/internal/server"
 	"github.com/sirupsen/logrus"
@@ -21,10 +25,11 @@ type Server struct {
 	server    *http.Server
 	oauth     *oauth.Client
 	templates *template.Template
+	catalog   music.Cataloger
 }
 
 // New creates a new API.
-func New(log logrus.FieldLogger, conf *app.Config) (*Server, error) {
+func New(log logrus.FieldLogger, conf *app.Config, catalog music.Cataloger) (*Server, error) {
 	router := mux.NewRouter()
 
 	auth, err := oauth.New(conf)
@@ -38,7 +43,11 @@ func New(log logrus.FieldLogger, conf *app.Config) (*Server, error) {
 	}
 
 	srv := &http.Server{
-		Handler:           router,
+		Handler: handlers.CORS(
+			handlers.AllowedMethods([]string{http.MethodGet}),
+			handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "Accept"}),
+			handlers.AllowCredentials(),
+		)(router),
 		Addr:              conf.APIBind,
 		ReadHeaderTimeout: time.Second * server.ReadHeaderTimeoutSeconds,
 	}
@@ -49,11 +58,12 @@ func New(log logrus.FieldLogger, conf *app.Config) (*Server, error) {
 		server:    srv,
 		oauth:     auth,
 		templates: tmpl,
+		catalog:   catalog,
 	}
 
 	router.HandleFunc("/login", output.processLogin).Methods(http.MethodGet)
 	router.HandleFunc("/callback", output.processCallback).Methods(http.MethodGet)
-	router.HandleFunc("/albums", func(http.ResponseWriter, *http.Request) {}).Methods(http.MethodGet)
+	router.HandleFunc("/albums", output.listAlbums).Methods(http.MethodGet)
 
 	return output, nil
 }
@@ -69,4 +79,18 @@ func (s *Server) Start(ctx context.Context) {
 	<-ctx.Done()
 
 	_ = s.server.Shutdown(ctx)
+}
+
+func bearerFromRequest(req *http.Request) (string, error) {
+	rawBearer := req.Header.Get("Authorization")
+	if rawBearer == "" {
+		return "", errors.New("missing bearer")
+	}
+
+	splitted := strings.Split(rawBearer, "Bearer ")
+	if len(splitted) != 2 {
+		return "", errors.New("wrong bearer")
+	}
+
+	return splitted[1], nil
 }

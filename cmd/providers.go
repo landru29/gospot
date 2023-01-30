@@ -2,17 +2,23 @@ package main
 
 import (
 	"github.com/landru29/gospot/internal/app"
+	"github.com/landru29/gospot/internal/music"
+	"github.com/landru29/gospot/internal/music/spotify"
 	"github.com/landru29/gospot/internal/server"
 	"github.com/landru29/gospot/internal/server/api"
 	"github.com/landru29/gospot/internal/server/client"
 	"github.com/sirupsen/logrus"
 )
 
-func providePublicAPI(log logrus.FieldLogger, conf *app.Config, toLaunch apiList) ([]server.Router, error) {
+func provideSpotify() (*spotify.Client, error) {
+	return spotify.New("https://api.spotify.com/v1")
+}
+
+func providePublicAPI(log logrus.FieldLogger, conf *app.Config, toLaunch apiList, catalog music.Cataloger) ([]server.Router, error) {
 	out := []server.Router{}
 
 	if toLaunch.Has("api") {
-		srv, err := api.New(log, conf)
+		srv, err := api.New(log, conf, catalog)
 		if err != nil {
 			return nil, err
 		}

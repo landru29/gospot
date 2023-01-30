@@ -46,7 +46,7 @@ func New(conf *app.Config) (*Client, error) {
 			RedirectURL:  redirectURL.String(),
 			ClientID:     conf.ClientID,
 			ClientSecret: conf.ClientSecret,
-			Scopes:       []string{"user-read-private", "user-read-email"},
+			Scopes:       []string{"user-read-private", "user-library-read"},
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  authURL,
 				TokenURL: tokenURL,

@@ -14,7 +14,11 @@ import (
 
 func setupApplication(conf *app.Config, toLaunch apiList) (*app.Controller, func(), error) {
 	fieldLogger := provideLogger()
-	v, err := providePublicAPI(fieldLogger, conf, toLaunch)
+	client, err := provideSpotify()
+	if err != nil {
+		return nil, nil, err
+	}
+	v, err := providePublicAPI(fieldLogger, conf, toLaunch, client)
 	if err != nil {
 		return nil, nil, err
 	}

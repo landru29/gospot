@@ -9,11 +9,13 @@
       integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
       crossorigin="anonymous"></script>
     <script>
-      window.loginURL = '{{ .Login }}';
+      window.apiURL = '{{ .Url }}';
       window.debug = {{ .Debug }};
     </script>
     <script src="script.js?{{ .Hash }}"></script>
   </head>
   <body>
+    <h1>List of user albums</h1>
+    <div id="albums"></div>
   </body>
 </html>

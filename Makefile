@@ -6,7 +6,7 @@ endif
 
 .PHONY: gospot gen
 
-gospot: gen
+gospot:
 	go build -o $@ ./cmd/...
 
 clean:

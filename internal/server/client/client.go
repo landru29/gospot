@@ -48,7 +48,7 @@ func New(log logrus.FieldLogger, conf *app.Config) (*Server, error) {
 		return nil, fmt.Errorf("cannot parse apiBaseUrl in configuration file: %w", err)
 	}
 
-	router.HandleFunc(`/{file:.*}`, templateFile("./public/", injection{
+	router.HandleFunc(`/{file:.*}`, templateFile("./client/build/", injection{
 		Hash:  randomHash(),
 		Url:   apiURL.String(),
 		Debug: map[bool]string{true: "true", false: "false"}[conf.Debug],

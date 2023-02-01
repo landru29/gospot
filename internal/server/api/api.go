@@ -44,9 +44,10 @@ func New(log logrus.FieldLogger, conf *app.Config, catalog music.Cataloger) (*Se
 
 	srv := &http.Server{
 		Handler: handlers.CORS(
-			handlers.AllowedMethods([]string{http.MethodGet}),
-			handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "Accept"}),
+			handlers.AllowedMethods([]string{http.MethodGet, http.MethodHead, http.MethodOptions}),
+			handlers.AllowedHeaders([]string{"Authorization", "Content-Type", "Accept", "X-Requested-With"}),
 			handlers.AllowCredentials(),
+			handlers.AllowedOrigins([]string{"http://localhost:8000"}),
 		)(router),
 		Addr:              conf.APIBind,
 		ReadHeaderTimeout: time.Second * server.ReadHeaderTimeoutSeconds,
